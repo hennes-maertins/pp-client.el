@@ -1,5 +1,9 @@
 ;;; pp-client.el --- A pp-client written in Emacs Lisp
 
+;; Copyright (C) 2024 Hennes Märtins
+;;
+;; Author: Hennes Märtins
+
 ;;; Commentary:
 
 ;; This is an alternative planning poker client for pp
@@ -7,6 +11,29 @@
 
 ;;; Code:
 (require 'websocket)
+
+;; TODO validate defcustom values
+
+(defcustom ppc-default-url "wss://pp.discordia.network"
+  "Default pp-server URL.
+The URL must have the form \"ws[s]://HOST[:PORT]\"."
+  :group 'pp-client
+  :type 'string)
+
+(defcustom ppc-default-room "pp"
+  "Default room to enter."
+  :group 'pp-client
+  :type 'string)
+
+(defcustom ppc-default-user (getenv "USER")
+  "Default user name."
+  :group 'pp-client
+  :type 'string)
+
+(defcustom ppc-ping-seconds 60
+  "Interval in seconds to send a PING to pp-server."
+  :group 'pp-client
+  :type 'natnum)
 
 (defvar-local ppc-websocket nil
   "Buffer local websocket used by pp-client.")
@@ -94,13 +121,14 @@ This is a handler method used by `ppc-open-ws."
 
 (defun ppc-open-ws (buffer url room user)
   "Setup a connection to a pp-server.
-The server is determined by URL.  If URL is empty, a default value is used.
-ROOM will be entered as USER.  If ROOM and USER are empty, default values are
-used.  The messages received by the pp-server are inserted into BUFFER."
+The server is determined by URL.  If URL is empty, `ppc-default-url is used.
+ROOM will be entered as USER.  If ROOM is empty, `ppc-default-room is used.
+If USER is empty, `ppc-default-user is used.
+The messages received by the pp-server are inserted into BUFFER."
   (if (null ppc-websocket)
-      (let* ((url (if (string-empty-p url) "wss://pp.discordia.network" url))
-             (room (if (string-empty-p room) "pp" room))
-             (user (if (string-empty-p user) (getenv "USER") user))
+      (let* ((url (if (string-empty-p url) ppc-default-url url))
+             (room (if (string-empty-p room) ppc-default-room room))
+             (user (if (string-empty-p user) ppc-default-user user))
              (ping-frame (make-websocket-frame
                           :opcode 'ping
                           :payload (encode-coding-string "Greetings from Emacs!"
@@ -114,7 +142,7 @@ used.  The messages received by the pp-server are inserted into BUFFER."
                             :on-close `(lambda (ws) (ppc-on-close ,buffer ws))))
              (ping `(lambda () (websocket-send ,my-websocket ,ping-frame))))
         (setq ppc-websocket my-websocket
-              ppc-ping-timer (run-at-time t 10 ping))) ;; TODO 60 seconds (customizable)
+              ppc-ping-timer (run-at-time t ppc-ping-seconds ping)))
     (message "ppc-websocket already opened")))
 
 (defun ppc-close ()
@@ -160,16 +188,18 @@ The buffer is read-only.  The following keys are defined:
   (keymap-set ppc-mode-map "n" 'ppc-start-new-round)
   (keymap-set ppc-mode-map "q" 'ppc-close))
 
-(defun ppc (arg url room user)
-  "Open a websocket connection to the pp-server at URL with ROOM and USER.
-The URL must have the form \"ws[s]://HOST[:PORT]\".
+(defun ppc (arg)
+  "Open a websocket connection to the pp-server.
 To have multiple sessions call this function with different numeric prefixes
 for ARG."
-  (interactive "P\n\
-MURL (default: wss://pp.discordia.network): \n\
-Mroom (default: pp): \n\
-Muser (default: $USER): ")
-  (let ((buffer (if (numberp arg)
+  (interactive "P")
+  (let ((url (read-from-minibuffer
+              (format "URL (default: %s): " ppc-default-url)))
+        (room (read-from-minibuffer
+               (format "room (default: %s): " ppc-default-room)))
+        (user (read-from-minibuffer
+               (format "user (default: %s): " ppc-default-user)))
+        (buffer (if (numberp arg)
                     (get-buffer-create (format "%s<%d>" "*pp-client*" arg))
                   (get-buffer-create "*pp-client*"))))
     (switch-to-buffer buffer)
