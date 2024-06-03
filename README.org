@@ -1,0 +1,37 @@
+* pp-client.el
+
+** A pp-client written in Emacs Lisp
+This is an alternative client for the [[https://en.wikipedia.org/wiki/Planning_poker][planning poker]] server of the
+project [[https://github.com/sne11ius/pp][pp]].  It is created for Emacs users and written in Emacs Lisp.
+
+** Installation
+Copy the file =pp-client.el= to your disk and add this line to your
+Emacs configuration (modify the path as needed):
+
+#+begin_src emacs-lisp
+  (load "/path/to/pp-client.el")
+#+end_src
+
+Restart Emacs or evaluate the inserted expression (e.g. by moving your
+cursor to the end of the line and type =C-x C-e=).
+
+** Usage
+Call =ppc= (e.g. by typing =M-x ppc=) to start a pp-client
+session. Use digit-arguments with this command to open multiple
+sessions (e.g.  =M-1 M-x ppc=, =M-2 M-x ppc=, ...).
+
+Use the following keys to send commands to the pp server:
+
+| Key | Command               | Purpose                                              |
+|-----+-----------------------+------------------------------------------------------|
+| =v= | ~ppc-play-card~       | Play a planning poker card (vote)                    |
+| =r= | ~ppc-reveal-cards~    | Reveal cards                                         |
+| =n= | ~ppc-start-new-round~ | Start a new round after the cards have been revealed |
+| =q= | ~ppc-close~           | Close the session                                    |
+
+** Quit
+To close a session type =q= or just kill the buffer.
+
+** Alternatives
+- the original [[https://github.com/sne11ius/pp][pp]] client (written in Go)
+- [[https://github.com/ja-ko/ppoker][ppoker]] (written in Rust)

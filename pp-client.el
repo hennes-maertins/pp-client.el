@@ -2,7 +2,8 @@
 
 ;;; Commentary:
 
-;; TODO
+;; This is an alternative planning poker client for pp
+;; (https://github.com/sne11ius/pp).
 
 ;;; Code:
 (require 'websocket)
@@ -148,15 +149,15 @@ used.  The messages received by the pp-server are inserted into BUFFER."
 (define-derived-mode ppc-mode special-mode "ppc"
   "The planning poker client mode.
 The buffer is read-only.  The following keys are defined:
-\"c\": `ppc-play-card
-\"n\": `ppc-start-new-round
+\"v\": `ppc-play-card
 \"r\": `ppc-reveal-cards
+\"n\": `ppc-start-new-round
 \"q\": `ppc-close"
   (setq buffer-read-only t)
   (buffer-disable-undo)
-  (keymap-set ppc-mode-map "c" 'ppc-play-card)
-  (keymap-set ppc-mode-map "n" 'ppc-start-new-round)
+  (keymap-set ppc-mode-map "v" 'ppc-play-card)
   (keymap-set ppc-mode-map "r" 'ppc-reveal-cards)
+  (keymap-set ppc-mode-map "n" 'ppc-start-new-round)
   (keymap-set ppc-mode-map "q" 'ppc-close))
 
 (defun ppc (arg url room user)
@@ -168,19 +169,17 @@ for ARG."
 MURL (default: wss://pp.discordia.network): \n\
 Mroom (default: pp): \n\
 Muser (default: $USER): ")
-  (let ((buf (if (numberp arg)
-                 (get-buffer-create (format "%s<%d>" "*pp-client*" arg))
-               (get-buffer-create "*pp-client*"))))
-    (switch-to-buffer buf)
-    (with-current-buffer buf
+  (let ((buffer (if (numberp arg)
+                    (get-buffer-create (format "%s<%d>" "*pp-client*" arg))
+                  (get-buffer-create "*pp-client*"))))
+    (switch-to-buffer buffer)
+    (with-current-buffer buffer
       (save-selected-window
-	;; We switch to the buffer's window in order to be able
-	;; to modify the value of point
-	(select-window (get-buffer-window buf 0))
+	(select-window (get-buffer-window buffer 0))
 	(or (derived-mode-p 'ppc-mode)
 	    (ppc-mode))
         (unless (null ppc-websocket) (ppc-close))
-        (ppc-open-ws buf url room user)
+        (ppc-open-ws buffer url room user)
         (add-hook 'kill-buffer-hook 'ppc-close nil t)))))
 
 ;;; pp-client.el ends here
