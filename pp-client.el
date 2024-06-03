@@ -135,8 +135,8 @@ The messages received by the pp-server are inserted into BUFFER."
                                                          'raw-text)
                           :completep t))
              (my-websocket (websocket-open
-                            (format "%s/rooms/%s?user=%s&userType=PARTICIPANT"
-                                    url room user)
+                            (url-encode-url (format "%s/rooms/%s?user=%s&userType=PARTICIPANT"
+                                    url room user))
                             :on-message `(lambda (ws frame)
                                            (ppc-on-message ,buffer ws frame))
                             :on-close `(lambda (ws) (ppc-on-close ,buffer ws))))
