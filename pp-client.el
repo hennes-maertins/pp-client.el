@@ -12,6 +12,8 @@
 ;;; Code:
 (require 'websocket)
 
+(defgroup pp-client nil "Customization of pp-client.")
+
 ;; TODO validate defcustom values
 
 (defcustom ppc-default-url "wss://pp.discordia.network"
