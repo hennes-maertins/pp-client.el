@@ -44,13 +44,38 @@ The URL must have the form \"ws[s]://HOST[:PORT]\"."
 (defvar-local ppc-deck nil
   "Buffer local deck used by pp-server.")
 
+(defface ppc-default-face
+  '((default :inherit default))
+  "Default face used in `ppc-mode."
+  :group 'pp-client)
+
+(defface ppc-label-face
+  '((default :inherit font-lock-keyword-face :weight bold))
+  "Face used for labels in `ppc-mode."
+  :group 'pp-client)
+
+(defface ppc-chat-log-face
+  '((default :inherit font-lock-comment-face))
+  "Face used for chat log messages in `ppc-mode."
+  :group 'pp-client)
+
+(defface ppc-info-log-face
+  '((default :inherit default))
+  "Face used for info log messages in `ppc-mode."
+  :group 'pp-client)
+
+(defface ppc-error-log-face
+  '((default :inherit error))
+  "Face used for error log messages in `ppc-mode."
+  :group 'pp-client)
+
 (defun ppc-format-user (user)
   "Format a USER entry taken from websocket-frame sent by pp-server."
   (let ((username (plist-get user :username))
         (userType (plist-get user :userType))
         (cardValue (plist-get user :cardValue))
         (yourUser  (plist-get user :yourUser))
-        (labelize (lambda (s) (propertize s 'face 'bold-italic))))
+        (labelize (lambda (s) (propertize s 'face 'ppc-label-face))))
     (concat
      (funcall labelize (if yourUser "Me:   " "User: "))
      (truncate-string-to-width username 20 nil ?\s "...")
@@ -75,9 +100,9 @@ The own user is the last one.  Other users are sorted by `ppc-compare-users."
   "Format a LOG entry taken from websocket-frame sent by pp-server."
   (let ((level (plist-get log :level))
         (msg (plist-get log :message))
-        (chatize (lambda (s) (propertize s 'face 'italic)))
-        (infoize (lambda (s) s))
-        (errorize (lambda (s) (propertize s 'face 'bold))))
+        (chatize (lambda (s) (propertize s 'face 'ppc-chat-log-face)))
+        (infoize (lambda (s) (propertize s 'face 'ppc-info-log-face)))
+        (errorize (lambda (s) (propertize s 'face 'ppc-error-log-face))))
     (cond ((string-equal level "CHAT") (funcall chatize msg))
           ((string-equal level "INFO") (funcall infoize msg))
           ((string-equal level "ERROR") (funcall errorize msg))
@@ -94,7 +119,7 @@ the cards played by users among other things."
         (users (plist-get msg :users))
         (average (plist-get msg :average))
         (log (plist-get msg :log))
-        (labelize (lambda (s) (propertize s 'face 'bold-italic))))
+        (labelize (lambda (s) (propertize s 'face 'ppc-label-face))))
     (concat
      (funcall labelize "Room: ") roomId
      (funcall labelize "\nDeck: ") (mapconcat 'identity deck " ")
@@ -103,7 +128,8 @@ the cards played by users among other things."
                        (ppc-filter-and-sort-users users)
                        "\n")
      (funcall labelize "\n\nAverage: ") average
-     "\n\nLog:\n" (mapconcat 'ppc-format-log log "\n"))))
+     (funcall labelize "\n\nLog:\n") (mapconcat 'ppc-format-log log "\n")
+     "\n")))
 
 (defun ppc-on-message (buffer _websocket frame)
   "Parse and format FRAME received by pp-server and insert it into BUFFER.
