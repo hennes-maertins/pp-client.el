@@ -54,8 +54,7 @@ The URL must have the form \"ws[s]://HOST[:PORT]\"."
     (concat
      (funcall labelize (if yourUser "Me:   " "User: "))
      (truncate-string-to-width username 20 nil ?\s "...")
-     (funcall labelize "\tCard: ") cardValue
-     )))
+     (funcall labelize "\tCard: ") cardValue)))
 
 (defun ppc-compare-users (user1 user2)
   "Determine order of USER1 and USER2 by username."
@@ -71,6 +70,18 @@ The own user is the last one.  Other users are sorted by `ppc-compare-users."
          (me (seq-filter (lambda (u) (plist-get u :yourUser)) ps))
          (nme (seq-filter (lambda (u) (not (plist-get u :yourUser))) ps)))
     (append (seq-sort 'ppc-compare-users nme) me)))
+
+(defun ppc-format-log (log)
+  "Format a LOG entry taken from websocket-frame sent by pp-server."
+  (let ((level (plist-get log :level))
+        (msg (plist-get log :message))
+        (chatize (lambda (s) (propertize s 'face 'italic)))
+        (infoize (lambda (s) s))
+        (errorize (lambda (s) (propertize s 'face 'bold))))
+    (cond ((string-equal level "CHAT") (funcall chatize msg))
+          ((string-equal level "INFO") (funcall infoize msg))
+          ((string-equal level "ERROR") (funcall errorize msg))
+          (t msg))))
 
 (defun ppc-format-message (msg)
   "Format MSG sent by pp-server.
@@ -91,7 +102,8 @@ the cards played by users among other things."
      "\n\n" (mapconcat 'ppc-format-user
                        (ppc-filter-and-sort-users users)
                        "\n")
-     (funcall labelize "\n\nAverage: ") average "\n")))
+     (funcall labelize "\n\nAverage: ") average
+     "\n\nLog:\n" (mapconcat 'ppc-format-log log "\n"))))
 
 (defun ppc-on-message (buffer _websocket frame)
   "Parse and format FRAME received by pp-server and insert it into BUFFER.
@@ -134,12 +146,14 @@ The messages received by the pp-server are inserted into BUFFER."
                           :payload (encode-coding-string "Greetings from Emacs!"
                                                          'raw-text)
                           :completep t))
-             (my-websocket (websocket-open
-                            (url-encode-url (format "%s/rooms/%s?user=%s&userType=PARTICIPANT"
-                                    url room user))
-                            :on-message `(lambda (ws frame)
-                                           (ppc-on-message ,buffer ws frame))
-                            :on-close `(lambda (ws) (ppc-on-close ,buffer ws))))
+             (my-websocket
+              (websocket-open
+               (url-encode-url (format
+                                "%s/rooms/%s?user=%s&userType=PARTICIPANT"
+                                url room user))
+               :on-message `(lambda (ws frame)
+                              (ppc-on-message ,buffer ws frame))
+               :on-close `(lambda (ws) (ppc-on-close ,buffer ws))))
              (ping `(lambda () (websocket-send ,my-websocket ,ping-frame))))
         (setq ppc-websocket my-websocket
               ppc-ping-timer (run-at-time t ppc-ping-seconds ping)))
@@ -174,19 +188,31 @@ The messages received by the pp-server are inserted into BUFFER."
     (websocket-send-text ppc-websocket msg)
     (message "Sent reveal cards")))
 
+(defun ppc-chat-message (chat-message)
+  "Send a CHAT-MESSAGE.
+This sends a websocket frame to the connected pp-server."
+  (interactive "MMessage: ")
+  (let ((msg (format
+              "{\"requestType\": \"ChatMessage\", \"message\": \"%s\"}"
+              chat-message)))
+    (websocket-send-text ppc-websocket msg)
+    (message "Sent chat message: %s" chat-message)))
+
 (define-derived-mode ppc-mode special-mode "ppc"
   "The planning poker client mode.
 The buffer is read-only.  The following keys are defined:
 \"v\": `ppc-play-card
 \"r\": `ppc-reveal-cards
 \"n\": `ppc-start-new-round
-\"q\": `ppc-close"
+\"q\": `ppc-close
+\"c\": `ppc-chat-message`"
   (setq buffer-read-only t)
   (buffer-disable-undo)
   (keymap-set ppc-mode-map "v" 'ppc-play-card)
   (keymap-set ppc-mode-map "r" 'ppc-reveal-cards)
   (keymap-set ppc-mode-map "n" 'ppc-start-new-round)
-  (keymap-set ppc-mode-map "q" 'ppc-close))
+  (keymap-set ppc-mode-map "q" 'ppc-close)
+  (keymap-set ppc-mode-map "c" 'ppc-chat-message))
 
 (defun ppc (arg)
   "Open a websocket connection to the pp-server.

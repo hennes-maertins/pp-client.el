@@ -28,6 +28,7 @@ Use the following keys to send commands to the pp server:
 | =r= | ~ppc-reveal-cards~    | Reveal cards                                         |
 | =n= | ~ppc-start-new-round~ | Start a new round after the cards have been revealed |
 | =q= | ~ppc-close~           | Close the session                                    |
+| =c= | ~ppc-chat-message~    | Send a chat message                                  |
 
 ** Quit
 To close a session type =q= or just kill the buffer.
