@@ -14,13 +14,30 @@
 
 (defgroup pp-client nil "Customization of pp-client.")
 
-;; TODO validate defcustom values
+(defun ppc-url-p (s)
+  "Non-nil if S is a valid pp-server URL.
+The URL must have the form \"ws[s]://HOST[:PORT]\"."
+  (let* ((url (url-generic-parse-url s))
+         (type (url-type url)))
+    (and type (string-match-p "^wss?$" type)
+         (not (or (url-user url)
+                  (url-password url)
+                  (url-target url)))
+         (string-empty-p (url-filename url))
+         (url-fullness url))))
+
+(defun ppc-validate-url-widget (widget)
+  "Validate WIDGET to customize `ppc-default-url."
+  (let ((s (widget-value widget)))
+    (unless (ppc-url-p s)
+      (widget-put widget :error (format "Invalid pp-server URL: %s" s))
+      widget)))
 
 (defcustom ppc-default-url "wss://pp.discordia.network"
   "Default pp-server URL.
 The URL must have the form \"ws[s]://HOST[:PORT]\"."
   :group 'pp-client
-  :type 'string)
+  :type '(string :validate ppc-validate-url-widget))
 
 (defcustom ppc-default-room "pp"
   "Default room to enter."
@@ -247,15 +264,17 @@ The buffer is read-only.  The following keys are defined:
 To have multiple sessions call this function with different numeric prefixes
 for ARG."
   (interactive "P")
-  (let ((url (read-from-minibuffer
-              (format "URL (default: %s): " ppc-default-url)))
-        (room (read-from-minibuffer
-               (format "room (default: %s): " ppc-default-room)))
-        (user (read-from-minibuffer
-               (format "user (default: %s): " ppc-default-user)))
-        (buffer (if (numberp arg)
-                    (get-buffer-create (format "%s<%d>" "*pp-client*" arg))
-                  (get-buffer-create "*pp-client*"))))
+  (let* ((url (read-from-minibuffer
+               (format "URL (default: %s): " ppc-default-url)))
+         (url (if (or (string-empty-p url) (ppc-url-p url)) url
+                (error "Invalid URL")))
+         (room (read-from-minibuffer
+                (format "room (default: %s): " ppc-default-room)))
+         (user (read-from-minibuffer
+                (format "user (default: %s): " ppc-default-user)))
+         (buffer (if (numberp arg)
+                     (get-buffer-create (format "%s<%d>" "*pp-client*" arg))
+                   (get-buffer-create "*pp-client*"))))
     (switch-to-buffer buffer)
     (with-current-buffer buffer
       (save-selected-window
