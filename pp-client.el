@@ -1,16 +1,42 @@
 ;;; pp-client.el --- A pp-client written in Emacs Lisp
 
 ;; Copyright (C) 2024 Hennes Märtins
-;;
+
 ;; Author: Hennes Märtins
+;; Created: May 31, 2024
+;; Package-Requires: ((emacs "29.1") (websocket "1.15"))
+;; Keywords: Planning Poker
+
+;; This file is not part of GNU Emacs.
+
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
 
 ;; This is an alternative planning poker client for pp
 ;; (https://github.com/sne11ius/pp).
+;; Call `ppc to start a session.
 
+
 ;;; Code:
+
+(require 'cl-macs)
+(require 'url-parse)
+(require 'wid-edit)
 (require 'websocket)
+
+;;; Custom Variables
 
 (defgroup pp-client nil "Customization of pp-client.")
 
@@ -54,6 +80,9 @@ The URL must have the form \"ws[s]://HOST[:PORT]\"."
   :group 'pp-client
   :type 'natnum)
 
+
+;;; Buffer local Variables
+
 (defvar-local ppc-websocket nil
   "Buffer local websocket used by pp-client.")
 
@@ -62,6 +91,9 @@ The URL must have the form \"ws[s]://HOST[:PORT]\"."
 
 (defvar-local ppc-deck nil
   "Buffer local deck used by pp-server.")
+
+
+;;; Face
 
 (defface ppc-default-face
   '((default :inherit default))
@@ -87,6 +119,9 @@ The URL must have the form \"ws[s]://HOST[:PORT]\"."
   '((default :inherit error))
   "Face used for error log messages in `ppc-mode."
   :group 'pp-client)
+
+
+;;; Internal functions
 
 (defun ppc-format-user (user)
   "Format a USER entry taken from websocket-frame sent by pp-server."
@@ -204,6 +239,9 @@ The messages received by the pp-server are inserted into BUFFER."
               ppc-ping-timer (run-at-time t ppc-ping-seconds ping)))
     (message "ppc-websocket already opened")))
 
+
+;;; Interactive functions
+
 (defun ppc-close ()
   "Close connection to pp-server."
   (interactive)
@@ -212,7 +250,8 @@ The messages received by the pp-server are inserted into BUFFER."
 
 (defun ppc-play-card (card)
   "Play CARD.  This sends a websocket frame to the connected pp-server."
-  (interactive (list (completing-read "Your card: " ppc-deck nil t nil nil nil t)))
+  (interactive (list (completing-read "Your card: " ppc-deck
+                                      nil t nil nil nil t)))
   (let ((msg (format
               "{\"requestType\": \"PlayCard\", \"cardValue\":\"%s\"}"
               card)))
