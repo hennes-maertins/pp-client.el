@@ -2,10 +2,10 @@
 
 ;; Copyright (C) 2024 Hennes Märtins
 
-;; Author: Hennes Märtins
+;; Author: Hennes Märtins <github@maertins-zone.de>
 ;; Created: May 31, 2024
 ;; Package-Requires: ((emacs "29.1") (websocket "1.15"))
-;; Keywords: Planning Poker
+;; Keywords: Planning Poker, pp
 
 ;; This file is not part of GNU Emacs.
 
