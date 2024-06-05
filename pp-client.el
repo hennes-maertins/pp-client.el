@@ -4,8 +4,10 @@
 
 ;; Author: Hennes Märtins <github@maertins-zone.de>
 ;; Created: May 31, 2024
+;; Version: 0.1-alpha
 ;; Package-Requires: ((emacs "29.1") (websocket "1.15"))
 ;; Keywords: Planning Poker, pp
+;; URL: https://github.com/hennes-maertins/pp-client.el
 
 ;; This file is not part of GNU Emacs.
 
