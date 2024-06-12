@@ -191,6 +191,8 @@ the cards played by users among other things."
   "Parse and format FRAME received by pp-server and insert it into BUFFER.
 The parsed FRAME is formatted by `ppc-format-message.
 The old content of BUFFER is erased before insertion.
+Each window point is restored by line and column unless the old window point was
+at end of buffer.  In this case the window point is set to end of buffer again.
 This is a handler method used by `ppc-open-ws."
   (let ((msg (json-parse-string (websocket-frame-text frame)
                                 :object-type 'plist
@@ -201,10 +203,30 @@ This is a handler method used by `ppc-open-ws."
       (cl-assert (derived-mode-p 'ppc-mode))
       (setq ppc-deck (plist-get msg :deck)
             buffer-read-only nil)
-      (erase-buffer)
-      (insert (ppc-format-message msg))
-      (goto-char (point-max))
-      (setq buffer-read-only t))))
+      (let ((win-coords (mapcar (lambda (win)
+                                  (save-excursion
+                                    (goto-char (window-point win))
+                                    (let ((line (line-number-at-pos nil t))
+                                          (column (current-column))
+                                          (eob (= (buffer-end 1) (point))))
+                                      (list win line column eob))))
+                                (get-buffer-window-list nil nil t))))
+        (erase-buffer)
+        (insert (ppc-format-message msg))
+        (mapc (lambda (wc)
+                (let* ((win (car wc))
+                       (line (cadr wc))
+                       (column (caddr wc))
+                       (eob (cadddr wc))
+                       (pos (save-excursion
+                              (if eob (goto-char (point-max))
+                                (goto-char (point-min))
+                                (forward-line (1- line))
+                                (move-to-column column))
+                              (point))))
+                  (set-window-point win pos)))
+              win-coords)
+        (setq buffer-read-only t)))))
 
 (defun ppc-on-close (_buffer _websocket)
   "Do some cleanup when connection is closed.
