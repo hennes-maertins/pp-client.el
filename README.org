@@ -2,9 +2,12 @@
 
 ** A pp-client written in Emacs Lisp
 This is an alternative client for the [[https://en.wikipedia.org/wiki/Planning_poker][planning poker]] server of the
-project [[https://github.com/sne11ius/pp][pp]].  It is created for Emacs users and written in Emacs Lisp.
+project [[https://github.com/sne11ius/pp][pp]]. It is created for Emacs users and written in Emacs Lisp.
 
 ** Installation
+Below two ways are described to install pp-client.
+
+*** Via load
 Copy the file =pp-client.el= to your disk and add this line to your
 Emacs configuration (modify the path as needed):
 
@@ -15,10 +18,19 @@ Emacs configuration (modify the path as needed):
 Restart Emacs or evaluate the inserted expression (e.g. by moving your
 cursor to the end of the line and type =C-x C-e=).
 
+*** Via use-package
+With Emacs 30+ you can install it as a package with use-package from
+GitHub directly:
+
+#+begin_src emacs-lisp
+  (use-package pp-client :vc (:url
+    "https://github.com/hennes-maertins/pp-client.el"))
+#+end_src
+
 ** Usage
-Call =ppc= (e.g. by typing =M-x ppc=) to start a pp-client
-session. Use digit-arguments with this command to open multiple
-sessions (e.g.  =M-1 M-x ppc=, =M-2 M-x ppc=, ...).
+Call =ppc= (e.g. by typing =M-x ppc=) to start a pp-client session.
+Use digit-arguments with this command to open multiple sessions (e.g.
+=M-1 M-x ppc=, =M-2 M-x ppc=, ...).
 
 Use the following keys to send commands to the pp server:
 

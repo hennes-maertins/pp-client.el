@@ -348,4 +348,5 @@ for ARG."
         (ppc-open-ws buffer url room user)
         (add-hook 'kill-buffer-hook 'ppc-close nil t)))))
 
+(provide 'pp-client)
 ;;; pp-client.el ends here
