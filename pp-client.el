@@ -28,7 +28,7 @@
 
 ;; This is an alternative planning poker client for pp
 ;; (https://github.com/sne11ius/pp).
-;; Call `ppc to start a session.
+;; Call `ppc' to start a session.
 
 
 ;;; Code:
