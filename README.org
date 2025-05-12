@@ -24,12 +24,17 @@ GitHub directly:
 
 #+begin_src emacs-lisp
   (use-package pp-client
+      :vc (:url "https://github.com/hennes-maertins/pp-client.el"))
+#+end_src
+
+If you prefer the latest commit instead of the latest stable release,
+you can add ~:rev :newest~ to the ~use-package~ declaration:
+
+#+begin_src emacs-lisp
+  (use-package pp-client
       :vc ( :url "https://github.com/hennes-maertins/pp-client.el"
             :rev :newest ))
 #+end_src
-
-As long as there are no real releases it is recommended to refer to
-the latest commit.
 
 ** Usage
 Call =ppc= (e.g. by typing =M-x ppc=) to start a pp-client session.
