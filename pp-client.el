@@ -1,10 +1,10 @@
 ;;; pp-client.el --- A pp-client written in Emacs Lisp -*- lexical-binding: t -*-
 
-;; Copyright (C) 2024 Hennes Märtins
+;; Copyright (C) 2024-2025 Hennes Märtins
 
 ;; Author: Hennes Märtins <github@maertins-zone.de>
 ;; Created: May 31, 2024
-;; Version: 0.1-alpha
+;; Version: 0.1
 ;; Package-Requires: ((emacs "29.1") (websocket "1.15"))
 ;; Keywords: Planning Poker, pp
 ;; URL: https://github.com/hennes-maertins/pp-client.el
