@@ -341,9 +341,9 @@ for ARG."
     (switch-to-buffer buffer)
     (with-current-buffer buffer
       (save-selected-window
-	(select-window (get-buffer-window buffer 0))
-	(or (derived-mode-p 'ppc-mode)
-	    (ppc-mode))
+        (select-window (get-buffer-window buffer 0))
+        (or (derived-mode-p 'ppc-mode)
+            (ppc-mode))
         (unless (null ppc-websocket) (ppc-close))
         (ppc-open-ws buffer url room user)
         (add-hook 'kill-buffer-hook 'ppc-close nil t)))))
