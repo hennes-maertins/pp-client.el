@@ -1,4 +1,4 @@
-;;; pp-client.el --- A pp-client written in Emacs Lisp
+;;; pp-client.el --- A pp-client written in Emacs Lisp -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2024 Hennes Märtins
 
