@@ -2,7 +2,7 @@
 
 ;; Copyright (C) 2024-2025 Hennes Märtins
 
-;; Author: Hennes Märtins <github@maertins-zone.de>
+;; Author: Hennes Märtins <hennes@maertins-zone.de>
 ;; Created: May 31, 2024
 ;; Version: 0.1
 ;; Package-Requires: ((emacs "29.1") (websocket "1.15"))
